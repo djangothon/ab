@@ -50,3 +50,5 @@ def quick(config, callable_name, only_authenticated=True):
                 return func(request, *args, **kwargs)
             else:
                 return _return_blank_or_raise_404(is_ajax)
+        return _quick
+    return decorator
