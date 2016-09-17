@@ -1,5 +1,6 @@
 from importlib import import_module
 
+
 def function_from_string(func_string):
     """
     Returns a function object from the function string.
@@ -14,4 +15,3 @@ def function_from_string(func_string):
     if module and function_name:
         func = getattr(module, function_name)
     return func
-

@@ -34,14 +34,14 @@ def quick(config, callable_name, only_authenticated=True):
             # Check if the config is available globally and return '' or raise
             # 404 as per the nature of the request.
             if not config:
-                _return_blank_or_raise_404(is_ajax)
+                return _return_blank_or_raise_404(is_ajax)
 
             user = request.user
 
             # The user will not be shown the feature if and only if
             # authentication is required and the user is not authenticated.
             if only_authenticated and not user.is_authenticated():
-                _return_blank_or_raise_404(is_ajax)
+                return _return_blank_or_raise_404(is_ajax)
 
             # Get the function object which needs to called in order to get the
             # control group for the experiment
@@ -49,4 +49,4 @@ def quick(config, callable_name, only_authenticated=True):
             if user.id in _callable():
                 return func(request, *args, **kwargs)
             else:
-                _return_blank_or_raise_404(is_ajax)
+                return _return_blank_or_raise_404(is_ajax)
