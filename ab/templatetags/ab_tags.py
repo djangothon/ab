@@ -11,21 +11,20 @@ class InExperiment(template.Node):
         self.only_authenticated = kwargs.get('only_authenticated', True)
 
     def render(self, context):
-        # Check if the config is available globally and return '' or raise
-        # 404 as per the nature of the request.
+        # Don't show the snippet if user is not a part of the experiment
         if not self.config:
             return False
 
         request = template.Variable('request').resolve(context)
         user = request.user
 
-        # The user will not be shown the feature if and only if
+        # The user will not be shown the snippet if and only if
         # authentication is required and the user is not authenticated.
         if self.only_authenticated and not user.is_authenticated():
             return False
 
         # Get the function object which needs to called in order to get the
-        # control group for the experiment
+        # experiment group for the experiment
         _callable = function_from_string(self.callable_name)
         if user.id in _callable():
             return True
