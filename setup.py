@@ -21,8 +21,8 @@ def reqfile(filepath):
 
 
 setup(
-    name="ab",
-    version="0.1.0",
+    name="django-ab",
+    version="0.1.1",
     description="AB Testing Framework for Django",
     long_description=open('README.md').read(),
     author='Sayan Chowdhury, Virendra Jain',
