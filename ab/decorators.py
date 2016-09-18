@@ -4,8 +4,18 @@ from django.http import HttpResponse
 
 from .utils import function_from_string
 
+def _return_blank_or_raise_404(is_ajax):
+    """
+    Return empty string '' in case of ajax requests and raise 404 in case
+    of non-ajax requests.
+    """
+    if is_ajax:
+        return HttpResponse('')
+    else:
+        raise Http404
 
-def quick(config, callable_name, only_authenticated=True):
+
+def quick(config, mysterious=None, only_authenticated=None):
     """
     Decides whether this user is allowed to access this view or not.
 
@@ -14,20 +24,10 @@ def quick(config, callable_name, only_authenticated=True):
                      eligible for proceeding further after this action.
     """
 
-    def _return_blank_or_raise_404(is_ajax):
-        """
-        Return empty string '' in case of ajax requests and raise 404 in case
-        of non-ajax requests.
-        """
-        if is_ajax:
-            return HttpResponse('')
-        else:
-            raise Http404
-
     def decorator(func):
-        @wraps
-        def _quick(request, *args, **kwargs):
 
+        @wraps(func)
+        def _quick(request, *args, **kwargs):
             # Check if the request is ajax.
             is_ajax = request.is_ajax()
 
@@ -35,20 +35,33 @@ def quick(config, callable_name, only_authenticated=True):
             # 404 as per the nature of the request.
             if not config:
                 return _return_blank_or_raise_404(is_ajax)
+            callable_name = None
+            _only_authenticated = None
+
+            if mysterious is not None:
+                if type(mysterious) == bool:
+                    _only_authenticated = mysterious
+                else:
+                    callable_name = mysterious
+            elif only_authenticated is not None:
+                _only_authenticated = only_authenticated
 
             user = request.user
-
-            # The user will not be shown the feature if and only if
-            # authentication is required and the user is not authenticated.
-            if only_authenticated and not user.is_authenticated():
-                return _return_blank_or_raise_404(is_ajax)
-
-            # Get the function object which needs to called in order to get the
-            # control group for the experiment
-            _callable = function_from_string(callable_name)
-            if user.id in _callable():
-                return func(request, *args, **kwargs)
+            if callable_name is None:
+                if (_only_authenticated is not None and
+                        _only_authenticated and
+                        not user.is_authenticated()):
+                    return _return_blank_or_raise_404(is_ajax)
+                else:
+                    return func(request, *args, **kwargs)
             else:
-                return _return_blank_or_raise_404(is_ajax)
+                if not user.is_authenticated():
+                    return _return_blank_or_raise_404(is_ajax)
+                else:
+                    _callable = function_from_string(callable_name)
+                    if user.id in _callable():
+                        return func(request, *args, **kwargs)
+                    return _return_blank_or_raise_404(is_ajax)
+            return _return_blank_or_raise_404(is_ajax)
         return _quick
     return decorator
