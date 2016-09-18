@@ -5,7 +5,7 @@ def experiment_access(request):
     ctx = {}
     experiments = settings.__dict__.keys()
     for experiment in experiments:
-        if not experiment.startswith('AB_'):
+        if not experiment.startswith('F_'):
             continue
         ctx[experiment] = getattr(settings, experiment, False)
     return ctx
